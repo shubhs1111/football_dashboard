@@ -107,6 +107,18 @@ st.markdown("""
     .kpi-delta{ font-family:'Geist'; font-size:0.78rem; font-weight:600; margin-top:6px; }
     .sev-pill{ display:inline-block; font-family:'Geist'; font-size:0.62rem; letter-spacing:0.1em; text-transform:uppercase;
         font-weight:700; padding:3px 10px; border-radius:9999px; }
+
+    /* Sidebar radio rendered as a left-rail nav */
+    [data-testid="stSidebar"] [role="radiogroup"]{ gap:3px; }
+    [data-testid="stSidebar"] [role="radiogroup"] label{ display:flex; align-items:center; width:100%;
+        padding:9px 12px; border-radius:8px; cursor:pointer; border-left:3px solid transparent;
+        font-family:'Geist'; font-weight:600; font-size:0.92rem; color:var(--muted); transition:background .12s; }
+    [data-testid="stSidebar"] [role="radiogroup"] label:hover{ background:var(--elevated); color:#ffffff; }
+    /* shrink the BaseWeb radio dot into a slim nav accent, keep the text label */
+    [data-testid="stSidebar"] [role="radiogroup"] label > div:first-child{ transform:scale(0.7); opacity:0.45; margin-right:2px; }
+    [data-testid="stSidebar"] [role="radiogroup"] label:has(input:checked){ background:var(--overlay);
+        color:#ffffff; border-left:3px solid var(--red); box-shadow:inset 0 0 12px rgba(255,45,59,0.10); }
+    [data-testid="stSidebar"] [role="radiogroup"] label:has(input:checked) > div:first-child{ opacity:1; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -222,6 +234,24 @@ def render_kpi(col, icon, label, value, delta, delta_color="#94A3B8", tip=""):
         f'</div>',
         unsafe_allow_html=True,
     )
+
+def render_signal_cards():
+    """Editorial 'signal' hero cards (Stitch design)."""
+    sig1, sig2, sig3 = st.columns(3)
+    signals = [
+        (sig1, "+2.13", "var(--danger)", "GOALS CONCEDED ABOVE xGA", "10 conceded vs 7.87 expected — leaking beyond chance quality."),
+        (sig2, "50%", "var(--amber)", "OPPONENT SHOT-ON-TARGET CONVERSION", "10 goals from just 20 shots on target against."),
+        (sig3, "57.7%", "var(--cyan)", "AVG POSSESSION · 13TH PLACE", "Territorial dominance without matchday control."),
+    ]
+    for c, v, clr, lbl, sub in signals:
+        c.markdown(
+            f'<div class="signal-card" style="border-top:3px solid {clr};">'
+            f'<div class="signal-value" style="color:{clr};">{v}</div>'
+            f'<div class="signal-label">{lbl}</div>'
+            f'<div class="signal-sub">{sub}</div></div>',
+            unsafe_allow_html=True,
+        )
+    st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
 
 # ------------------------------------------------------------------------------
 # 3. INTERACTIVE TACTICS-BOARD ENGINE (PITCH + LAYERS + PLAYER MAPS)
@@ -576,11 +606,29 @@ def render_issue_board(issue):
 # ------------------------------------------------------------------------------
 # 4. SIDEBAR FILTERS
 # ------------------------------------------------------------------------------
-st.sidebar.image("https://upload.wikimedia.org/wikipedia/en/7/7a/Manchester_United_FC_crest.svg", width=80)
-st.sidebar.title("MUFC Analytics Control")
-st.sidebar.markdown("**Season 2026/27 Investigation**")
-st.sidebar.markdown("---")
+NAV = [
+    "📊 Executive Summary",
+    "🗓️ Match Results & Form",
+    "⚔️ Attacking Analytics",
+    "🛡️ Defensive & Transition",
+    "🏃 Player Performance Matrix",
+    "🔎 Investigation Board",
+    "📑 Data Methodology",
+]
 
+st.sidebar.markdown(
+    '<div style="display:flex;align-items:center;gap:10px;padding:2px 0 4px;">'
+    '<img src="https://upload.wikimedia.org/wikipedia/en/7/7a/Manchester_United_FC_crest.svg" width="34">'
+    '<div><div style="font-family:\'Plus Jakarta Sans\';font-weight:800;font-size:1.05rem;color:#fff;line-height:1;">UNITED INTEL</div>'
+    '<div class="kicker" style="margin-top:3px;">Tactical Lab · 2026/27</div></div></div>',
+    unsafe_allow_html=True,
+)
+st.sidebar.markdown('<div style="color:#94A3B8;font-size:0.68rem;letter-spacing:0.1em;text-transform:uppercase;margin:4px 0 10px;">● Report · MD 1–6 Live</div>', unsafe_allow_html=True)
+
+nav = st.sidebar.radio("Navigate", NAV, label_visibility="collapsed")
+
+st.sidebar.markdown("---")
+st.sidebar.markdown('<div class="kicker" style="margin-bottom:6px;">Filters</div>', unsafe_allow_html=True)
 comp_filter = st.sidebar.multiselect("Filter Competition", options=df_matches["Competition"].unique(), default=df_matches["Competition"].unique())
 venue_filter = st.sidebar.multiselect("Filter Venue", options=df_matches["Venue"].unique(), default=df_matches["Venue"].unique())
 opp_filter = st.sidebar.multiselect("Filter Opponent Strength", options=df_matches["Opponent_Category"].unique(), default=df_matches["Opponent_Category"].unique())
@@ -604,47 +652,22 @@ Despite strong underlying possession (57.7% avg) and xG (12.91 generated), sever
 # ------------------------------------------------------------------------------
 st.markdown('<div class="kicker">● UNITED INTEL · TACTICAL LAB // 2026/27 · MATCHDAYS 1–6</div>', unsafe_allow_html=True)
 st.title("Manchester United 2026/27 Tactical Investigation")
-st.markdown('<p style="color:#94A3B8; font-size:1.05rem; max-width:70ch;">Analysing the root causes of a poor start — where dominant territorial control has turned into self-inflicted matchday defeats.</p>', unsafe_allow_html=True)
-
-# --- Editorial "signal" hero cards (Stitch design) ---
-sig1, sig2, sig3 = st.columns(3)
-_signals = [
-    (sig1, "+2.13", "var(--danger)", "GOALS CONCEDED ABOVE xGA", "10 conceded vs 7.87 expected — leaking beyond chance quality."),
-    (sig2, "50%", "var(--amber)", "OPPONENT SHOT-ON-TARGET CONVERSION", "10 goals from just 20 shots on target against."),
-    (sig3, "57.7%", "var(--cyan)", "AVG POSSESSION · 13TH PLACE", "Territorial dominance without matchday control."),
-]
-for _c, _v, _clr, _lbl, _sub in _signals:
-    _c.markdown(
-        f'<div class="signal-card" style="border-top:3px solid {_clr};">'
-        f'<div class="signal-value" style="color:{_clr};">{_v}</div>'
-        f'<div class="signal-label">{_lbl}</div>'
-        f'<div class="signal-sub">{_sub}</div></div>',
-        unsafe_allow_html=True,
-    )
-st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
+st.markdown(f'<p style="color:#94A3B8; font-size:1.02rem; max-width:70ch;">Section: <b style="color:#E1E2EB;">{nav.split(" ",1)[1] if " " in nav else nav}</b> — analysing the root causes of a poor start, where dominant territorial control has turned into self-inflicted matchday defeats.</p>', unsafe_allow_html=True)
 st.markdown("---")
 
 if filtered_df.empty:
     st.warning("No match data matches your selected filters. Please adjust the sidebar filters.")
     st.stop()
 
-# ------------------------------------------------------------------------------
-# 6. DASHBOARD TABS
-# ------------------------------------------------------------------------------
-tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs([
-    "📊 Executive Summary",
-    "🗓️ Match Results & Form",
-    "⚔️ Attacking Analytics",
-    "🛡️ Defensive & Transition Deficiencies",
-    "🏃 Player Performance Matrix",
-    "🔎 Final Investigation & Tactics Boards",
-    "📑 Data Methodology"
-])
+# ==============================================================================
+# LEFT-NAV ROUTED SECTIONS (each section is chosen from the sidebar nav)
+# ==============================================================================
 
-# ==============================================================================
-# TAB 1: EXECUTIVE SUMMARY
-# ==============================================================================
-with tab1:
+# ------------------------------------------------------------------------------
+# SECTION: EXECUTIVE SUMMARY
+# ------------------------------------------------------------------------------
+if nav == "📊 Executive Summary":
+    render_signal_cards()
     st.subheader("Executive KPI Overview")
     total_matches = len(filtered_df)
     wins = (filtered_df["Result"] == "Win").sum()
@@ -712,7 +735,7 @@ with tab1:
 # ==============================================================================
 # TAB 2: MATCH RESULTS & FORM TRACKER
 # ==============================================================================
-with tab2:
+if nav == "🗓️ Match Results & Form":
     st.subheader("Match-by-Match Performance Breakdown")
     display_cols = ["Date", "Opponent", "Competition", "Venue", "Result", "GF", "GA", "xG", "xGA", "Possession", "Shots", "Shots_On_Target", "Corners"]
     best_high = ["GF", "xG", "Possession", "Shots", "Shots_On_Target", "Corners"]  # higher = better
@@ -763,7 +786,7 @@ with tab2:
 # ==============================================================================
 # TAB 3: ATTACKING ANALYTICS
 # ==============================================================================
-with tab3:
+if nav == "⚔️ Attacking Analytics":
     st.subheader("Attacking Dynamics & Offensive Output")
     col_att1, col_att2 = st.columns(2)
     with col_att1:
@@ -814,7 +837,7 @@ with tab3:
 # ==============================================================================
 # TAB 4: DEFENSIVE & TRANSITION DEFICIENCIES
 # ==============================================================================
-with tab4:
+if nav == "🛡️ Defensive & Transition":
     st.subheader("Defensive Vulnerabilities & Transition Analysis")
     d1, d2 = st.columns(2)
     with d1:
@@ -863,7 +886,7 @@ with tab4:
 # ==============================================================================
 # TAB 5: PLAYER PERFORMANCE MATRIX
 # ==============================================================================
-with tab5:
+if nav == "🏃 Player Performance Matrix":
     st.subheader("22-Player Squad Performance & Positional Matrix")
     p_search = st.text_input("Search Player Name or Position", "")
     if p_search:
@@ -904,7 +927,7 @@ with tab5:
 # ==============================================================================
 # TAB 6: FINAL INVESTIGATION — PER-ISSUE INTERACTIVE TACTICS BOARDS
 # ==============================================================================
-with tab6:
+if nav == "🔎 Investigation Board":
     st.subheader("Central Investigation: Why Has Manchester United Started Poorly?")
     st.markdown("#### *Each of the 4 core issues has its own interactive tactics board — toggle layers and click players to inspect them.*")
     st.info("💡 **How to use:** pick an issue tab below → toggle the **tactical layers** on/off → **pick a player** (or click a red marker) to open their season stats in the Player Inspector.")
@@ -918,7 +941,7 @@ with tab6:
 # ==============================================================================
 # TAB 7: DATA METHODOLOGY & LIMITATIONS
 # ==============================================================================
-with tab7:
+if nav == "📑 Data Methodology":
     st.subheader("Data Methodology & Technical Standards")
     col_m1, col_m2 = st.columns(2)
     with col_m1:
