@@ -89,6 +89,24 @@ st.markdown("""
     [data-testid="stAlert"]{ background:var(--elevated); border:1px solid var(--border); border-radius:10px; }
     .stMultiSelect [data-baseweb="tag"]{ background:var(--overlay) !important; }
     hr{ border-color:var(--border); }
+
+    /* Editorial hero "signal" cards */
+    .signal-card{ background:linear-gradient(180deg, rgba(22,27,38,0.6) 0%, rgba(11,14,20,0.95) 100%);
+        border:1px solid var(--border); border-radius:12px; padding:16px 18px; height:100%; }
+    .signal-value{ font-family:'Plus Jakarta Sans'; font-weight:800; font-size:2rem; line-height:1; letter-spacing:-0.02em; }
+    .signal-label{ font-family:'Geist'; font-size:0.66rem; letter-spacing:0.12em; text-transform:uppercase;
+        color:var(--muted); font-weight:600; margin-top:8px; }
+    .signal-sub{ font-family:'Geist'; font-size:0.82rem; color:#c7ccd6; margin-top:6px; }
+
+    /* Custom KPI stat cards */
+    .kpi-card{ background:var(--card); border:1px solid var(--border); border-radius:12px; padding:16px 18px; height:100%;
+        position:relative; }
+    .kpi-icon{ position:absolute; top:14px; right:16px; font-size:1rem; opacity:0.7; }
+    .kpi-label{ font-family:'Geist'; font-size:0.66rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--muted); font-weight:600; }
+    .kpi-value{ font-family:'Plus Jakarta Sans'; font-weight:800; font-size:2.1rem; line-height:1.05; color:#fff; letter-spacing:-0.02em; margin-top:4px; }
+    .kpi-delta{ font-family:'Geist'; font-size:0.78rem; font-weight:600; margin-top:6px; }
+    .sev-pill{ display:inline-block; font-family:'Geist'; font-size:0.62rem; letter-spacing:0.1em; text-transform:uppercase;
+        font-weight:700; padding:3px 10px; border-radius:9999px; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -192,6 +210,18 @@ def style_chart(fig):
     fig.update_yaxes(title_font=dict(size=13, color="#94A3B8"), tickfont=dict(size=12, color="#94A3B8"),
                      gridcolor="rgba(255,255,255,0.06)")
     return fig
+
+def render_kpi(col, icon, label, value, delta, delta_color="#94A3B8", tip=""):
+    """Custom Stitch-style KPI stat card with an icon and colored delta line."""
+    col.markdown(
+        f'<div class="kpi-card" title="{tip}">'
+        f'<span class="kpi-icon">{icon}</span>'
+        f'<div class="kpi-label">{label}</div>'
+        f'<div class="kpi-value">{value}</div>'
+        f'<div class="kpi-delta" style="color:{delta_color};">{delta}</div>'
+        f'</div>',
+        unsafe_allow_html=True,
+    )
 
 # ------------------------------------------------------------------------------
 # 3. INTERACTIVE TACTICS-BOARD ENGINE (PITCH + LAYERS + PLAYER MAPS)
@@ -447,8 +477,27 @@ ISSUES = [
     },
 ]
 
+ISSUE_SEVERITY = {
+    "i1": ("CRITICAL HIGH", "#EF4444", 94.8),
+    "i2": ("SEVERE", "#F59E0B", 78.2),
+    "i3": ("HIGH RISK", "#FF2D3B", 81.0),
+    "i4": ("TACTICAL DRAG", "#38BDF8", 64.5),
+}
+
 def render_issue_board(issue):
     """Render one issue: layer toggles, interactive pitch (click-to-inspect), player panel, and prose."""
+    sev = ISSUE_SEVERITY.get(issue["key"])
+    if sev:
+        lbl, clr, vi = sev
+        st.markdown(
+            f'<div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:4px 0 6px;">'
+            f'<span class="sev-pill" style="background:{clr}22;color:{clr};border:1px solid {clr}66;">{lbl}</span>'
+            f'<span style="font-family:Geist;font-size:0.68rem;letter-spacing:0.12em;text-transform:uppercase;color:#94A3B8;font-weight:600;">Vulnerability Index</span>'
+            f'<span style="font-family:\'Plus Jakarta Sans\';font-weight:800;font-size:1.1rem;color:{clr};">{vi:.1f}'
+            f'<span style="color:#94A3B8;font-weight:600;font-size:0.8rem;"> / 100</span></span>'
+            f'</div>',
+            unsafe_allow_html=True,
+        )
     st.markdown(f"### {issue['title']}")
 
     layer_labels = list(issue["layers"].keys())
@@ -556,6 +605,23 @@ Despite strong underlying possession (57.7% avg) and xG (12.91 generated), sever
 st.markdown('<div class="kicker">● UNITED INTEL · TACTICAL LAB // 2026/27 · MATCHDAYS 1–6</div>', unsafe_allow_html=True)
 st.title("Manchester United 2026/27 Tactical Investigation")
 st.markdown('<p style="color:#94A3B8; font-size:1.05rem; max-width:70ch;">Analysing the root causes of a poor start — where dominant territorial control has turned into self-inflicted matchday defeats.</p>', unsafe_allow_html=True)
+
+# --- Editorial "signal" hero cards (Stitch design) ---
+sig1, sig2, sig3 = st.columns(3)
+_signals = [
+    (sig1, "+2.13", "var(--danger)", "GOALS CONCEDED ABOVE xGA", "10 conceded vs 7.87 expected — leaking beyond chance quality."),
+    (sig2, "50%", "var(--amber)", "OPPONENT SHOT-ON-TARGET CONVERSION", "10 goals from just 20 shots on target against."),
+    (sig3, "57.7%", "var(--cyan)", "AVG POSSESSION · 13TH PLACE", "Territorial dominance without matchday control."),
+]
+for _c, _v, _clr, _lbl, _sub in _signals:
+    _c.markdown(
+        f'<div class="signal-card" style="border-top:3px solid {_clr};">'
+        f'<div class="signal-value" style="color:{_clr};">{_v}</div>'
+        f'<div class="signal-label">{_lbl}</div>'
+        f'<div class="signal-sub">{_sub}</div></div>',
+        unsafe_allow_html=True,
+    )
+st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
 st.markdown("---")
 
 if filtered_df.empty:
@@ -589,24 +655,28 @@ with tab1:
     avg_poss = filtered_df["Possession"].mean()
     win_pct = (wins / total_matches * 100) if total_matches > 0 else 0
 
+    GREEN, RED, MUTED = "#10B981", "#EF4444", "#94A3B8"
     r1c1, r1c2, r1c3 = st.columns(3)
-    r1c1.metric("Record (W-D-L)", f"{wins}-{draws}-{losses}", f"{win_pct:.0f}% win rate",
-                help="Wins–Draws–Losses across the matches currently shown by the sidebar filters.")
-    r1c2.metric("Goals: For – Against", f"{gf} – {ga}", f"Goal difference {gd:+d}",
-                help="Total goals United scored vs conceded in the filtered matches.")
-    r1c3.metric("Premier League Standing", "13th", "4 pts · 1W-1D-2L",
-                help="League position (Premier League fixtures only, not affected by the filters).")
+    render_kpi(r1c1, "🎖️", "Record (W-D-L)", f"{wins}-{draws}-{losses}",
+               f"▲ {win_pct:.0f}% win rate", GREEN if win_pct >= 50 else MUTED,
+               tip="Wins–Draws–Losses across the matches currently shown by the sidebar filters.")
+    render_kpi(r1c2, "⚽", "Goals: For – Against", f"{gf} – {ga}",
+               f"{'▲' if gd >= 0 else '▼'} Goal difference {gd:+d}", GREEN if gd >= 0 else RED,
+               tip="Total goals United scored vs conceded in the filtered matches.")
+    render_kpi(r1c3, "🏆", "Premier League Standing", "13th", "▼ 4 pts · 1W-1D-2L", RED,
+               tip="League position (Premier League fixtures only, not affected by the filters).")
 
     r2c1, r2c2, r2c3 = st.columns(3)
-    r2c1.metric("xG created", f"{total_xg:.2f}", f"{gf - total_xg:+.2f} goals vs xG",
-                help="Expected Goals — the quality-weighted total of chances United CREATED. "
-                     "The sub-figure is actual goals minus xG: positive = finishing ABOVE the chances created.")
-    r2c2.metric("xG conceded (xGA)", f"{total_xga:.2f}", f"{ga - total_xga:+.2f} goals vs xGA",
-                delta_color="inverse",
-                help="Expected Goals Against — the quality of chances United GAVE UP. "
-                     "The sub-figure is actual goals conceded minus xGA: positive (red) = conceding MORE than the chances warranted.")
-    r2c3.metric("Avg possession", f"{avg_poss:.1f}%", "Territorial control",
-                help="Average share of the ball across the filtered matches.")
+    render_kpi(r2c1, "🎯", "xG Created", f"{total_xg:.2f}",
+               f"{'▲' if gf - total_xg >= 0 else '▼'} {gf - total_xg:+.2f} goals vs xG",
+               GREEN if gf - total_xg >= 0 else RED,
+               tip="Expected Goals created. Delta = actual goals minus xG; positive = finishing above the chances created.")
+    render_kpi(r2c2, "🛡️", "xG Conceded (xGA)", f"{total_xga:.2f}",
+               f"▲ {ga - total_xga:+.2f} goals vs xGA", RED,
+               tip="Expected Goals Against. Delta = actual goals conceded minus xGA; positive (red) = conceding more than warranted.")
+    render_kpi(r2c3, "📈", "Avg Possession", f"{avg_poss:.1f}%", "◆ Territorial control", "#38BDF8",
+               tip="Average share of the ball across the filtered matches.")
+    st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
 
     st.markdown("---")
     c1, c2 = st.columns(2)
