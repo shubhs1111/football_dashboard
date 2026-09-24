@@ -2224,7 +2224,8 @@ def page_methodology(f, s):
             ("Opta match scrapes", "Matchday feeds for all 6 competitive fixtures."),
             ("Premier League Match Centre", "Match metadata, referee records and event logs."),
             ("FotMob & TNT Sports analytics", "xG, xGA, shot maps, pass accuracy and player ratings."),
-            ("Wikipedia & Fandom season logs", "Historical context, transfers and squad registrations.")]),
+            ("Wikipedia & Fandom season logs", "Historical context, transfers and squad registrations."),
+            ("Google NotebookLM", "Research and data extraction: sources above gathered and structured into the match and player datasets.")]),
         ("function", RED, "Key Metric Definitions", [
             ("Expected Goals (xG)", "Chance-quality measure, 0.0–1.0 per shot."),
             ("Rest Defense", "Positioning of non-attacking players in possession to prevent counters on turnover."),

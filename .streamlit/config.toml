@@ -1,0 +1,8 @@
+# Lock the app to its dark design. Without this, Streamlit follows the visitor's OS setting and
+# light-mode visitors get white dropdowns / search boxes with unreadable text.
+[theme]
+base = "dark"
+primaryColor = "#DA020E"
+backgroundColor = "#0B0E14"
+secondaryBackgroundColor = "#161B26"
+textColor = "#E1E2EB"

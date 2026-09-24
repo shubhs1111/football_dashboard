@@ -25,3 +25,9 @@ streamlit run streamlit_app.py
 
 ## Data
 All figures are self-contained in `streamlit_app.py` (illustrative dataset for a portfolio project).
+
+## How it was built
+An end-to-end GenAI workflow:
+- **Research:** Google NotebookLM gathered match reports and stats and extracted the data behind the analysis
+- **Design:** Google Stitch prototyped the UI
+- **Build:** Claude turned the design and data into this interactive Streamlit dashboard
