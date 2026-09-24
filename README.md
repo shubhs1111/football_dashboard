@@ -3,6 +3,12 @@
 An interactive Streamlit analytics dashboard investigating the root causes of Manchester United's
 poor start to the 2026/27 season, built with Streamlit, Plotly and Pandas.
 
+## Design
+The UI replicates the Google Stitch **"United Intel · Tactical Lab"** concept (Tactical Intelligence & Telemetry
+design system): obsidian surfaces, Plus Jakarta Sans + Geist typography, Material Symbols icons, a left-rail
+navigation, a sticky scope/filter/export top bar, and Stitch-style KPI strips, HTML/SVG charts and telemetry tables.
+Every figure is computed from the project dataset (Stitch's placeholder numbers are not used).
+
 ## Features
 - Executive KPI overview (record, goals, xG / xGA, possession)
 - Match-by-match results & form breakdown
