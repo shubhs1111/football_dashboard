@@ -22,24 +22,73 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+# --- Design system ported from the "United Intel / Tactical Lab" Google Stitch concept ---
 st.markdown("""
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-    .main { background-color: #0e1117; }
-    .metric-card {
-        background-color: #1e222d; border-radius: 8px; padding: 15px;
-        border-left: 4px solid #da020e; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    :root{
+        --canvas:#0B0E14; --card:#10141D; --elevated:#161B26; --overlay:#1B2232; --highlight:#222B3D;
+        --red:#FF2D3B; --red-core:#DA020E; --cyan:#38BDF8; --cyan-deep:#06B6D4; --emerald:#10B981;
+        --amber:#F59E0B; --danger:#EF4444; --text:#E1E2EB; --muted:#94A3B8;
+        --border:rgba(255,255,255,0.08);
     }
-    .metric-value { font-size: 26px; font-weight: bold; color: #ffffff; }
-    .metric-label { font-size: 13px; color: #8b92a5; text-transform: uppercase; letter-spacing: 0.5px; }
-    .problem-box { background-color: #1a1518; border-left: 5px solid #ff4b4b; padding: 16px; border-radius: 6px; margin-bottom: 15px; }
-    .evidence-box { background-color: #151a21; border-left: 5px solid #00d4b1; padding: 16px; border-radius: 6px; margin-bottom: 15px; }
-    .impact-box { background-color: #211c15; border-left: 5px solid #ffa726; padding: 16px; border-radius: 6px; margin-bottom: 15px; }
-    .explanation-box { background-color: #171d22; border-left: 5px solid #42a5f5; padding: 16px; border-radius: 6px; margin-bottom: 15px; }
-    .tactics-card { background-color: #131720; border: 1px solid #2a3142; border-radius: 8px; padding: 18px; margin-top: 10px; }
-    .player-card { background-color: #131720; border: 1px solid #da020e; border-radius: 8px; padding: 16px; margin-top: 8px; }
-    .stTabs [data-baseweb="tab-list"] { gap: 8px; }
-    .stTabs [data-baseweb="tab"] { background-color: #1e222d; border-radius: 4px; color: #ffffff; padding: 8px 16px; }
-    .stTabs [aria-selected="true"] { background-color: #da020e !important; color: #ffffff !important; }
+    /* Base canvas + typography */
+    .stApp, [data-testid="stAppViewContainer"]{ background:var(--canvas); color:var(--text); }
+    [data-testid="stHeader"]{ background:transparent; }
+    html, body, [class*="css"], .stMarkdown, p, span, div, label{ font-family:'Geist', sans-serif; }
+    h1,h2,h3,h4,h5{ font-family:'Plus Jakarta Sans', sans-serif !important; font-weight:800; letter-spacing:-0.02em; color:#ffffff; }
+    h1{ font-size:2.6rem; line-height:1.08; }
+    h2{ font-size:1.9rem; } h3{ font-size:1.35rem; font-weight:700; } h4{ font-size:1.05rem; font-weight:700; }
+    a{ color:var(--cyan); }
+
+    /* Sidebar */
+    [data-testid="stSidebar"]{ background:#0B0E14; border-right:1px solid var(--border); }
+    [data-testid="stSidebar"] *{ color:var(--text); }
+
+    /* Editorial kicker label */
+    .kicker{ font-family:'Geist'; font-size:0.72rem; letter-spacing:0.16em; text-transform:uppercase;
+             color:var(--red); font-weight:700; margin-bottom:2px; }
+
+    /* Tabs -> segmented pills */
+    .stTabs [data-baseweb="tab-list"]{ gap:6px; border-bottom:1px solid var(--border); padding-bottom:4px; flex-wrap:wrap; }
+    .stTabs [data-baseweb="tab"]{ background:var(--card); border:1px solid var(--border); border-radius:9999px;
+        color:var(--muted); padding:6px 16px; font-family:'Geist'; font-size:0.82rem; font-weight:600; }
+    .stTabs [aria-selected="true"]{ background:var(--overlay) !important; color:#ffffff !important;
+        border-color:var(--red) !important; box-shadow:inset 0 0 0 1px var(--red); }
+
+    /* KPI metric cards */
+    [data-testid="stMetric"]{ background:var(--card); border:1px solid var(--border); border-radius:12px; padding:16px 18px; }
+    [data-testid="stMetricLabel"] p{ font-family:'Geist' !important; font-size:0.68rem !important; letter-spacing:0.12em;
+        text-transform:uppercase; color:var(--muted) !important; font-weight:600; }
+    [data-testid="stMetricValue"]{ font-family:'Plus Jakarta Sans' !important; font-weight:800 !important;
+        font-size:2.1rem !important; color:#ffffff; letter-spacing:-0.02em; }
+    [data-testid="stMetricDelta"]{ font-family:'Geist' !important; font-weight:600; font-size:0.8rem; }
+
+    /* Content cards */
+    .metric-card{ background:var(--card); border:1px solid var(--border); border-left:3px solid var(--red);
+        border-radius:12px; padding:18px; }
+    .metric-value{ font-family:'Plus Jakarta Sans'; font-size:24px; font-weight:800; color:#ffffff; }
+    .metric-label{ font-size:0.68rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.12em; font-weight:600; }
+    .problem-box{ background:var(--card); border:1px solid var(--border); border-left:4px solid var(--danger); padding:16px; border-radius:10px; margin-bottom:14px; }
+    .evidence-box{ background:var(--card); border:1px solid var(--border); border-left:4px solid var(--emerald); padding:16px; border-radius:10px; margin-bottom:14px; }
+    .impact-box{ background:var(--card); border:1px solid var(--border); border-left:4px solid var(--amber); padding:16px; border-radius:10px; margin-bottom:14px; }
+    .explanation-box{ background:var(--card); border:1px solid var(--border); border-left:4px solid var(--cyan); padding:16px; border-radius:10px; margin-bottom:14px; }
+    .tactics-card{ background:var(--elevated); border:1px solid var(--border); border-radius:12px; padding:18px; margin-top:10px; }
+    .player-card{ background:var(--overlay); border:1px solid var(--red); border-radius:12px; padding:14px; margin-top:8px;
+        box-shadow:0 0 16px rgba(255,45,59,0.20); }
+
+    /* Buttons */
+    .stButton>button{ background:var(--red); color:#ffffff; border:none; border-radius:8px;
+        font-family:'Plus Jakarta Sans'; font-weight:700; }
+    .stButton>button:hover{ box-shadow:0 0 20px rgba(255,45,59,0.4); color:#ffffff; }
+
+    /* Inputs, tables, alerts */
+    [data-testid="stDataFrame"]{ border:1px solid var(--border); border-radius:10px; }
+    [data-testid="stAlert"]{ background:var(--elevated); border:1px solid var(--border); border-radius:10px; }
+    .stMultiSelect [data-baseweb="tag"]{ background:var(--overlay) !important; }
+    hr{ border-color:var(--border); }
 </style>
 """, unsafe_allow_html=True)
 
@@ -120,23 +169,27 @@ def load_player_data():
 df_matches = load_match_data()
 df_players = load_player_data()
 
+# Palette tokens (mirror the CSS design system) for use in Plotly traces
+C_RED = "#FF2D3B"; C_CYAN = "#38BDF8"; C_EMERALD = "#10B981"; C_AMBER = "#F59E0B"; C_DANGER = "#EF4444"
+
 # ------------------------------------------------------------------------------
 # CHART THEMING — consistent fonts + readable hover tooltips across all charts
 # ------------------------------------------------------------------------------
 def style_chart(fig):
-    """Apply dark-theme fonts and a legible hover tooltip style to any Plotly figure."""
+    """Apply the Tactical-Lab design system (fonts, palette, legible hover) to any Plotly figure."""
     fig.update_layout(
         paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
-        font=dict(color="#e8eaed", size=13, family="sans-serif"),
-        title_font=dict(color="#ffffff", size=16),
-        hoverlabel=dict(bgcolor="#20242f", bordercolor="#3a4152",
-                        font=dict(color="#ffffff", size=13, family="sans-serif"), align="left"),
-        legend=dict(font=dict(color="#e8eaed", size=12)),
+        font=dict(color="#E1E2EB", size=13, family="Geist, sans-serif"),
+        title_font=dict(color="#ffffff", size=16, family="Plus Jakarta Sans, sans-serif"),
+        colorway=["#FF2D3B", "#38BDF8", "#10B981", "#F59E0B", "#A78BFA", "#F472B6", "#22D3EE"],
+        hoverlabel=dict(bgcolor="#161B26", bordercolor="rgba(255,255,255,0.14)",
+                        font=dict(color="#ffffff", size=13, family="Geist, sans-serif"), align="left"),
+        legend=dict(font=dict(color="#E1E2EB", size=12)),
         margin=dict(t=60, r=20, b=50, l=20),
     )
-    fig.update_xaxes(title_font=dict(size=13, color="#c7ccd6"), tickfont=dict(size=12, color="#c7ccd6"),
+    fig.update_xaxes(title_font=dict(size=13, color="#94A3B8"), tickfont=dict(size=12, color="#94A3B8"),
                      gridcolor="rgba(255,255,255,0.06)")
-    fig.update_yaxes(title_font=dict(size=13, color="#c7ccd6"), tickfont=dict(size=12, color="#c7ccd6"),
+    fig.update_yaxes(title_font=dict(size=13, color="#94A3B8"), tickfont=dict(size=12, color="#94A3B8"),
                      gridcolor="rgba(255,255,255,0.06)")
     return fig
 
@@ -148,7 +201,7 @@ PITCH_L, PITCH_W = 105, 68
 def add_pitch(fig):
     """Draw the base football pitch (lines, boxes, center circle, half-space guides)."""
     fig.add_shape(type="rect", x0=0, y0=0, x1=PITCH_L, y1=PITCH_W,
-                  fillcolor="#122b1c", line=dict(color="#ffffff", width=2), layer="below")
+                  fillcolor="#0E131C", line=dict(color="rgba(255,255,255,0.55)", width=2), layer="below")
     fig.add_shape(type="line", x0=PITCH_L/2, y0=0, x1=PITCH_L/2, y1=PITCH_W, line=dict(color="#ffffff", width=2))
     fig.add_shape(type="circle", x0=PITCH_L/2 - 9.15, y0=PITCH_W/2 - 9.15, x1=PITCH_L/2 + 9.15, y1=PITCH_W/2 + 9.15,
                   line=dict(color="#ffffff", width=2))
@@ -165,19 +218,19 @@ def add_pitch(fig):
 
 def finalize_pitch(fig, title, height=580):
     fig.update_layout(
-        title=dict(text=title, font=dict(size=15, color="#ffffff"), x=0, xanchor="left", y=0.97, yanchor="top"),
+        title=dict(text=title, font=dict(size=15, color="#ffffff", family="Plus Jakarta Sans, sans-serif"), x=0, xanchor="left", y=0.97, yanchor="top"),
         xaxis=dict(range=[-2, 107], showgrid=False, zeroline=False, visible=False),
         yaxis=dict(range=[-2, 70], showgrid=False, zeroline=False, visible=False),
         paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
         margin=dict(l=10, r=10, t=55, b=55), height=height,
         clickmode="event+select",
-        hoverlabel=dict(bgcolor="#20242f", bordercolor="#3a4152",
-                        font=dict(color="#ffffff", size=13, family="sans-serif"), align="left"),
+        hoverlabel=dict(bgcolor="#161B26", bordercolor="rgba(255,255,255,0.14)",
+                        font=dict(color="#ffffff", size=13, family="Geist, sans-serif"), align="left"),
         legend=dict(orientation="h", yanchor="top", y=-0.04, x=0.5, xanchor="center",
                     font=dict(color="#ffffff", size=10), bgcolor="rgba(0,0,0,0.25)")
     )
 
-def add_players(fig, coords, color="#da020e", name="Manchester United"):
+def add_players(fig, coords, color="#FF2D3B", name="Manchester United"):
     """coords: list of (x, y, short_label, full_name). Clicking a marker returns full_name via customdata."""
     xs = [c[0] for c in coords]; ys = [c[1] for c in coords]
     short = [c[2] for c in coords]; full = [c[3] for c in coords]
@@ -188,7 +241,7 @@ def add_players(fig, coords, color="#da020e", name="Manchester United"):
         customdata=[[f] for f in full], hovertext=full, hoverinfo="text", name=name
     ))
 
-def add_opponents(fig, coords, color="#42a5f5", name="Opponent Threat"):
+def add_opponents(fig, coords, color="#38BDF8", name="Opponent Threat"):
     xs = [c[0] for c in coords]; ys = [c[1] for c in coords]; lbl = [c[2] for c in coords]
     fig.add_trace(go.Scatter(
         x=xs, y=ys, mode="markers",
@@ -225,18 +278,18 @@ I1_PLAYERS = [  # 4-2-3-1 in possession: back 4 (full-backs pushed high), double
     (96, 34, "Cunha", "Matheus Cunha"),
 ]
 def i1_halfspaces(f):
-    _zone(f, 32, 48, 66, 66, "rgba(255,75,75,0.20)", "#ff4b4b")
-    _zone(f, 32, 2, 66, 20, "rgba(255,75,75,0.20)", "#ff4b4b")
+    _zone(f, 32, 48, 66, 66, "rgba(255,75,75,0.20)", "#EF4444")
+    _zone(f, 32, 2, 66, 20, "rgba(255,75,75,0.20)", "#EF4444")
     _label(f, 49, 57, "Vacated half-space", "#ff8a8a", 10)
     _label(f, 49, 11, "Vacated half-space", "#ff8a8a", 10)
 def i1_counters(f):
-    _arrow(f, 62, 55, 36, 50, "#ff4b4b")
-    _arrow(f, 62, 13, 36, 20, "#ff4b4b")
-    _label(f, 64, 52, "Counter", "#ff4b4b", 10)
-    _label(f, 64, 16, "Counter", "#ff4b4b", 10)
+    _arrow(f, 62, 55, 36, 50, "#EF4444")
+    _arrow(f, 62, 13, 36, 20, "#EF4444")
+    _label(f, 64, 52, "Counter", "#EF4444", 10)
+    _label(f, 64, 16, "Counter", "#EF4444", 10)
 def i1_isolated_pivot(f):
-    _circle(f, 48, 33, 11, 13, "rgba(255,167,38,0.14)", "#ffa726")
-    _label(f, 63, 44, "Stretched<br>double pivot", "#ffa726", 10)
+    _circle(f, 48, 33, 11, 13, "rgba(255,167,38,0.14)", "#F59E0B")
+    _label(f, 63, 44, "Stretched<br>double pivot", "#F59E0B", 10)
 
 # ---------- ISSUE 2: SECOND-HALF COLLAPSE ----------
 I2_PLAYERS = [
@@ -246,16 +299,16 @@ I2_PLAYERS = [
     (52, 12, "Mbeumo", "Bryan Mbeumo"), (66, 34, "Šeško", "Benjamin Šeško"),
 ]
 def i2_first_half(f):
-    _zone(f, 18, 8, 56, 60, "rgba(66,165,245,0.10)", "#42a5f5")
+    _zone(f, 18, 8, 56, 60, "rgba(66,165,245,0.10)", "#38BDF8")
     _label(f, 37, 63, "1st-half compact block (GD +2)", "#8fc4f5", 10)
 def i2_gap(f):
-    _zone(f, 27, 6, 40, 62, "rgba(255,75,75,0.18)", "#ff4b4b", dash="dot")
+    _zone(f, 27, 6, 40, 62, "rgba(255,75,75,0.18)", "#EF4444", dash="dot")
     _label(f, 33, 65, "Late fatigue gap between lines", "#ff8a8a", 10)
-    _arrow(f, 46, 34, 30, 34, "#ff4b4b")
+    _arrow(f, 46, 34, 30, 34, "#EF4444")
 def i2_late_goals(f):
     spots = [(3, 40, "83' George (Everton)"), (3, 28, "90+6' Maitland-Niles"), (3, 34, "90+1' Akpom (Ipswich)")]
     fig_x = [s[0] for s in spots]; fig_y = [s[1] for s in spots]; lbl = [s[2] for s in spots]
-    f.add_trace(go.Scatter(x=fig_x, y=fig_y, mode="markers", marker=dict(size=16, color="#ff4b4b", symbol="x"),
+    f.add_trace(go.Scatter(x=fig_x, y=fig_y, mode="markers", marker=dict(size=16, color="#EF4444", symbol="x"),
                            hovertext=lbl, hoverinfo="text", name="Late goals conceded"))
 
 # ---------- ISSUE 3: SET-PIECE DISORGANIZATION (defending own box, left goal) ----------
@@ -266,8 +319,8 @@ I3_PLAYERS = [
     (15, 24, "Mbeumo", "Bryan Mbeumo"), (17, 34, "Bruno", "Bruno Fernandes"),
 ]
 def i3_zonal_gaps(f):
-    _circle(f, 11, 40, 4, 4, "rgba(255,75,75,0.22)", "#ff4b4b")
-    _circle(f, 8, 44, 3.5, 3.5, "rgba(255,75,75,0.22)", "#ff4b4b")
+    _circle(f, 11, 40, 4, 4, "rgba(255,75,75,0.22)", "#EF4444")
+    _circle(f, 8, 44, 3.5, 3.5, "rgba(255,75,75,0.22)", "#EF4444")
     _label(f, 11, 47, "Unmarked zonal gaps", "#ff8a8a", 10)
 def i3_opponents(f):
     opp = [(10, 41, "Ajayi (Hull 17' corner)"), (7.5, 45, "Mendy (Hull 38' FK)"), (13, 39, "Second-ball runner")]
@@ -286,14 +339,14 @@ I4_PLAYERS = [
     (82, 10, "Mbeumo", "Bryan Mbeumo"), (92, 34, "Šeško", "Benjamin Šeško"),
 ]
 def i4_overlap(f):
-    _circle(f, 73.5, 34, 12, 14, "rgba(255,167,38,0.25)", "#ffa726")
+    _circle(f, 73.5, 34, 12, 14, "rgba(255,167,38,0.25)", "#F59E0B")
     _label(f, 73.5, 34, "Bruno + Cunha<br>space overlap", "#ffd08a", 10)
 def i4_dependency(f):
     for (sx, sy) in [(50, 34), (25, 48), (45, 58), (45, 10), (80, 60)]:
-        _arrow(f, sx, sy, 72, 37, "#00d4b1", 2)
-    _label(f, 60, 20, "Passing network funnels into Bruno", "#00d4b1", 10)
+        _arrow(f, sx, sy, 72, 37, "#10B981", 2)
+    _label(f, 60, 20, "Passing network funnels into Bruno", "#10B981", 10)
 def i4_empty_box(f):
-    _zone(f, 90, 20, 105, 48, "rgba(66,165,245,0.12)", "#42a5f5", dash="dot")
+    _zone(f, 90, 20, 105, 48, "rgba(66,165,245,0.12)", "#38BDF8", dash="dot")
     _label(f, 97.5, 50, "Box left to Šeško alone", "#8fc4f5", 10)
 
 # ==============================================================================
@@ -500,8 +553,9 @@ Despite strong underlying possession (57.7% avg) and xG (12.91 generated), sever
 # ------------------------------------------------------------------------------
 # 5. DASHBOARD HEADER & TITLE
 # ------------------------------------------------------------------------------
-st.title("⚽ Manchester United 2026/27 Tactical Investigation Dashboard")
-st.markdown("### *Analyzing the Root Causes of Manchester United's Poor Start to the Season*")
+st.markdown('<div class="kicker">● UNITED INTEL · TACTICAL LAB // 2026/27 · MATCHDAYS 1–6</div>', unsafe_allow_html=True)
+st.title("Manchester United 2026/27 Tactical Investigation")
+st.markdown('<p style="color:#94A3B8; font-size:1.05rem; max-width:70ch;">Analysing the root causes of a poor start — where dominant territorial control has turned into self-inflicted matchday defeats.</p>', unsafe_allow_html=True)
 st.markdown("---")
 
 if filtered_df.empty:
@@ -560,7 +614,7 @@ with tab1:
         st.markdown("#### Match Results Breakdown")
         res_counts = filtered_df["Result"].value_counts().reset_index()
         res_counts.columns = ["Result", "Count"]
-        color_map = {"Win": "#00d4b1", "Draw": "#ffa726", "Loss": "#ff4b4b"}
+        color_map = {"Win": "#10B981", "Draw": "#F59E0B", "Loss": "#EF4444"}
         fig_res = px.pie(res_counts, values="Count", names="Result", color="Result",
                          color_discrete_map=color_map, hole=0.4, title="Distribution of Results")
         fig_res.update_traces(hovertemplate="<b>%{label}</b><br>%{value} match(es) · %{percent}<extra></extra>")
@@ -569,9 +623,9 @@ with tab1:
     with c2:
         st.markdown("#### xG vs xGA Comparison per Match")
         fig_xg = go.Figure()
-        fig_xg.add_trace(go.Bar(x=filtered_df["Opponent"], y=filtered_df["xG"], name="xG created", marker_color="#00d4b1",
+        fig_xg.add_trace(go.Bar(x=filtered_df["Opponent"], y=filtered_df["xG"], name="xG created", marker_color="#10B981",
                                 hovertemplate="<b>%{x}</b><br>xG created: %{y:.2f}<extra></extra>"))
-        fig_xg.add_trace(go.Bar(x=filtered_df["Opponent"], y=filtered_df["xGA"], name="xG conceded", marker_color="#ff4b4b",
+        fig_xg.add_trace(go.Bar(x=filtered_df["Opponent"], y=filtered_df["xGA"], name="xG conceded", marker_color="#EF4444",
                                 hovertemplate="<b>%{x}</b><br>xG conceded: %{y:.2f}<extra></extra>"))
         fig_xg.update_layout(barmode="group", title="xG Created vs xG Conceded (per match)", xaxis_title="Opponent", yaxis_title="Expected Goals")
         style_chart(fig_xg)
@@ -607,9 +661,9 @@ with tab2:
         st.markdown("#### Home vs Away Performance Split")
         home_away = df_matches.groupby("Venue")[["GF", "GA", "xG", "xGA", "Possession"]].mean().reset_index()
         fig_ha = go.Figure()
-        fig_ha.add_trace(go.Bar(x=home_away["Venue"], y=home_away["GF"], name="Avg goals for", marker_color="#00d4b1",
+        fig_ha.add_trace(go.Bar(x=home_away["Venue"], y=home_away["GF"], name="Avg goals for", marker_color="#10B981",
                                 hovertemplate="<b>%{x}</b><br>Avg goals FOR: %{y:.2f}<extra></extra>"))
-        fig_ha.add_trace(go.Bar(x=home_away["Venue"], y=home_away["GA"], name="Avg goals against", marker_color="#ff4b4b",
+        fig_ha.add_trace(go.Bar(x=home_away["Venue"], y=home_away["GA"], name="Avg goals against", marker_color="#EF4444",
                                 hovertemplate="<b>%{x}</b><br>Avg goals AGAINST: %{y:.2f}<extra></extra>"))
         fig_ha.update_layout(barmode="group", title="Average Goals per Match: Home vs Away",
                              xaxis_title="Venue", yaxis_title="Avg goals per match")
@@ -623,9 +677,9 @@ with tab2:
             "Goals_Conceded": [filtered_df["1st_Half_GA"].sum(), filtered_df["2nd_Half_GA"].sum()]
         })
         fig_half = go.Figure()
-        fig_half.add_trace(go.Bar(x=half_data["Half"], y=half_data["Goals_Scored"], name="Goals scored", marker_color="#00d4b1",
+        fig_half.add_trace(go.Bar(x=half_data["Half"], y=half_data["Goals_Scored"], name="Goals scored", marker_color="#10B981",
                                   hovertemplate="<b>%{x}</b><br>Goals scored: %{y}<extra></extra>"))
-        fig_half.add_trace(go.Bar(x=half_data["Half"], y=half_data["Goals_Conceded"], name="Goals conceded", marker_color="#ff4b4b",
+        fig_half.add_trace(go.Bar(x=half_data["Half"], y=half_data["Goals_Conceded"], name="Goals conceded", marker_color="#EF4444",
                                   hovertemplate="<b>%{x}</b><br>Goals conceded: %{y}<extra></extra>"))
         fig_half.update_layout(barmode="group", title="Goal Distribution by Half (Critical Second-Half Collapse)",
                                xaxis_title="Match half", yaxis_title="Total goals")
@@ -646,10 +700,10 @@ with tab3:
         st.markdown("#### Shot Volume & Touches in Opposition Box")
         fig_shots = go.Figure()
         fig_shots.add_trace(go.Scatter(x=filtered_df["Opponent"], y=filtered_df["Shots"], name="Total shots",
-                                       mode="lines+markers", line=dict(color="#00d4b1", width=3),
+                                       mode="lines+markers", line=dict(color="#10B981", width=3),
                                        hovertemplate="<b>%{x}</b><br>Total shots: %{y}<extra></extra>"))
         fig_shots.add_trace(go.Scatter(x=filtered_df["Opponent"], y=filtered_df["Box_Touches"], name="Opposition box touches",
-                                       mode="lines+markers", line=dict(color="#42a5f5", width=3, dash="dash"),
+                                       mode="lines+markers", line=dict(color="#38BDF8", width=3, dash="dash"),
                                        hovertemplate="<b>%{x}</b><br>Opp. box touches: %{y}<extra></extra>"))
         fig_shots.update_layout(title="Shot Generation vs Opposition Box Penetration",
                                 xaxis_title="Opponent", yaxis_title="Count")
@@ -659,7 +713,7 @@ with tab3:
         st.markdown("#### Top Goal Contributors")
         top_contrib = df_players.sort_values(by="Goals", ascending=False).head(7)
         fig_top = px.bar(top_contrib, x="Player", y=["Goals", "Assists"], title="Direct Goal Contributions (Goals & Assists)",
-                         color_discrete_sequence=["#da020e", "#ff9800"], labels={"value": "Count", "variable": "Metric"})
+                         color_discrete_sequence=["#FF2D3B", "#F59E0B"], labels={"value": "Count", "variable": "Metric"})
         fig_top.update_traces(hovertemplate="<b>%{x}</b><br>%{fullData.name}: %{y}<extra></extra>")
         fig_top.update_layout(xaxis_title="Player", yaxis_title="Count", legend_title_text="")
         style_chart(fig_top)
@@ -696,9 +750,9 @@ with tab4:
     with d1:
         st.markdown("#### Shot Conversion Conceded (Opposition Clinicality)")
         fig_opp = go.Figure()
-        fig_opp.add_trace(go.Bar(x=filtered_df["Opponent"], y=filtered_df["Opp_Shots"], name="Opponent total shots", marker_color="#42a5f5",
+        fig_opp.add_trace(go.Bar(x=filtered_df["Opponent"], y=filtered_df["Opp_Shots"], name="Opponent total shots", marker_color="#38BDF8",
                                  hovertemplate="<b>%{x}</b><br>Opponent shots: %{y}<extra></extra>"))
-        fig_opp.add_trace(go.Bar(x=filtered_df["Opponent"], y=filtered_df["GA"], name="Actual goals conceded", marker_color="#ff4b4b",
+        fig_opp.add_trace(go.Bar(x=filtered_df["Opponent"], y=filtered_df["GA"], name="Actual goals conceded", marker_color="#EF4444",
                                  hovertemplate="<b>%{x}</b><br>Goals conceded: %{y}<extra></extra>"))
         fig_opp.update_layout(barmode="group", title="Opponent Shots vs Actual Goals Conceded",
                               xaxis_title="Opponent", yaxis_title="Count")
