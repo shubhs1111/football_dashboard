@@ -1,7 +1,7 @@
 # ==============================================================================
 # MANCHESTER UNITED 2026/27 SEASON ANALYTICS DASHBOARD (V4)
 # "Why Has Manchester United Started the Season Poorly?"
-# V4: Full replication of the Google Stitch "United Intel · Tactical Lab" design
+# V4: Google Stitch "Tactical Intelligence & Telemetry" design, branded "Theatre of Data"
 #     (Tactical Intelligence & Telemetry design system), bound to the real dataset.
 # Built with Streamlit, Plotly and Pandas
 # ==============================================================================
@@ -18,7 +18,7 @@ import streamlit.components.v1 as components
 # 1. PAGE CONFIGURATION & DESIGN SYSTEM
 # ------------------------------------------------------------------------------
 st.set_page_config(
-    page_title="United Intel · Tactical Lab 2026/27",
+    page_title="Theatre of Data · MUFC 2026/27",
     page_icon="⚽",
     layout="wide",
     initial_sidebar_state="auto",  # open on desktop, collapsed on phones
@@ -65,8 +65,19 @@ html, body, .stApp, .stMarkdown, p, div, label, input, textarea, button{ font-fa
 /* ---------- Sidebar = Stitch left rail ---------- */
 [data-testid="stSidebar"]{ background:var(--card) !important; border-right:none; box-shadow:0 1px 8px rgba(0,0,0,0.4);
   min-width:18rem !important; max-width:18rem !important; }
-[data-testid="stSidebarHeader"]{ height:0.5rem; padding:0 0.75rem; }
+/* slim strip at the top of the rail holding the « collapse button (always visible, never clipped) */
+[data-testid="stSidebarHeader"]{ height:2.4rem !important; min-height:2.4rem; padding:0.55rem 0.75rem 0 !important;
+  display:flex !important; justify-content:flex-end; align-items:center; }
+[data-testid="stSidebarCollapseButton"]{ position:static !important; display:block !important; visibility:visible !important; opacity:1 !important; }
+[data-testid="stSidebarCollapseButton"] button{ background:var(--elev) !important; border:1px solid var(--border) !important;
+  border-radius:0.5rem !important; color:var(--muted) !important; }
+[data-testid="stSidebarCollapseButton"] button:hover{ background:var(--hl) !important; color:var(--text) !important; box-shadow:0 0 0 1px var(--red); }
 [data-testid="stSidebarUserContent"]{ padding:0 0.75rem 1rem !important; }
+/* stretch the rail's content to full height so the Data Feed card can sit at the very bottom */
+[data-testid="stSidebarUserContent"]{ display:flex; flex-direction:column; min-height:calc(100vh - 4.4rem); }  /* 2.4rem header + 1rem gap above + 1rem bottom breathing room */
+[data-testid="stSidebarUserContent"] > div{ flex:1; display:flex; flex-direction:column; }
+[data-testid="stSidebarUserContent"] > div > [data-testid="stVerticalBlock"]{ flex:1; }
+[data-testid="stSidebar"] [data-testid="stElementContainer"]:has(.side-feed){ margin-top:auto; padding-top:1.5rem; }
 [data-testid="stSidebar"] [data-testid="stVerticalBlock"]{ gap:0.25rem; }
 [data-testid="stSidebar"] .stButton button{ justify-content:flex-start !important; border:none !important; border-radius:0.5rem;
   padding:0.5rem 1rem; min-height:2.4rem; font-family:'Geist'; font-size:0.8125rem; }
@@ -83,7 +94,17 @@ html, body, .stApp, .stMarkdown, p, div, label, input, textarea, button{ font-fa
 .st-key-topbar{ background:rgba(16,20,29,0.85); backdrop-filter:blur(24px);
   -webkit-backdrop-filter:blur(24px); margin:0 -1.5rem 0.5rem; padding:0.55rem 1.5rem; box-shadow:0 1px 8px rgba(0,0,0,0.35);
   width:calc(100% + 3rem) !important; }
-.st-key-topbar [data-testid="stHorizontalBlock"]{ gap:0.5rem; }
+.st-key-topbar [data-testid="stHorizontalBlock"]{ gap:1rem; }
+.st-key-topbar [data-testid="stColumn"]:nth-child(2) [data-testid="stVerticalBlock"]{ align-items:center; }   /* scope control centred */
+.st-key-topbar [data-testid="stColumn"]:last-child [data-testid="stVerticalBlock"]{ align-items:flex-end; }  /* filters right-aligned */
+.st-key-topbar [data-testid="stPopover"] button{ min-height:2.25rem; padding:0 1rem; }
+/* Streamlit pins the markdown wrappers to a fixed height; let the context label size to its content so it centres */
+.st-key-topbar [data-testid="stElementContainer"]:has(.topbar-ctx), .st-key-topbar [data-testid="stMarkdown"]:has(.topbar-ctx),
+.st-key-topbar [data-testid="stMarkdown"]:has(.topbar-ctx) > div,
+.st-key-topbar [data-testid="stColumn"]:has(.topbar-ctx) > [data-testid="stVerticalBlock"]{ height:auto !important; min-height:2.25rem; }
+/* Streamlit's markdown carries margin-bottom:-16px; inside a centred flex wrapper that pushes the label 8px down */
+.st-key-topbar [data-testid="stMarkdownContainer"]:has(.topbar-ctx){ margin-bottom:0 !important; }
+[data-testid="stStatusWidget"]{ display:none !important; }  /* "Running… Stop" would float over the Filters button */
 
 /* ---------- Keyed containers rendered as Stitch cards ---------- */
 [class*="st-key-card"]{ background:var(--card); border-radius:0.75rem; padding:1.25rem; box-shadow:0 1px 3px rgba(0,0,0,0.35); }
@@ -377,17 +398,44 @@ def pos_unit(p):
     return {"GK": "Goalkeepers", "CB": "Defence", "LB": "Defence", "RB": "Defence", "AM": "Attacking Mid",
             "CM": "Midfield Engine", "DM": "Midfield Engine"}.get(first, "Forwards")
 
-LOGO_SVG = (
-    '<svg width="{s}" height="{s}" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">'
-    '<rect width="64" height="64" rx="15" fill="#DA020E"/>'
-    '<circle cx="32" cy="32" r="21" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="2.6" stroke-dasharray="3.2 3.2"/>'
-    '<polygon points="32,13 36.6,26.7 51,26.9 39.4,35.4 43.8,49.2 32,40.8 20.2,49.2 24.6,35.4 13,26.9 27.4,26.7" fill="#ffffff"/>'
-    '<polygon points="32,22 34.4,29.4 42.1,29.5 35.9,34 38.2,41.4 32,36.9 25.8,41.4 28.1,34 21.9,29.5 29.6,29.4" fill="#ffe1e1"/>'
-    '</svg>'
-)
+def _football_logo_svg():
+    """'Theatre of Data' mark: a classic panelled football on the red tile, over faint pitch markings.
+    Geometry is computed so the pentagon panels and seams line up exactly."""
+    cx, cy, R = 32.0, 33.0, 18.5          # ball centre / radius
+    ink = "#10141D"
+    ang = [math.radians(-90 + 72 * k) for k in range(5)]
+    pt = lambda r, a: (cx + r * math.cos(a), cy + r * math.sin(a))
+    fmt = lambda pts: " ".join(f"{x:.2f},{y:.2f}" for x, y in pts)
+    centre = fmt(pt(6.6, a) for a in ang)                                   # central black pentagon
+    seams = "".join(f'<line x1="{pt(6.6, a)[0]:.2f}" y1="{pt(6.6, a)[1]:.2f}" x2="{pt(12.4, a)[0]:.2f}" y2="{pt(12.4, a)[1]:.2f}"/>'
+                    for a in ang)                                          # seams to the outer panels
+    def rim_panel(a, r=4.8, d=18.0):
+        """Small pentagon centred near the rim, one vertex aimed at the ball centre; clipped by the ball outline."""
+        px, py = pt(d, a)
+        return fmt((px + r * math.cos(a + math.pi + math.radians(72 * j)), py + r * math.sin(a + math.pi + math.radians(72 * j)))
+                   for j in range(5))
+    outer = "".join(f'<polygon points="{rim_panel(a)}"/>' for a in ang)  # partial pentagons at the rim
+    rim_seams = "".join(f'<line x1="{pt(12.4, a)[0]:.2f}" y1="{pt(12.4, a)[1]:.2f}" x2="{pt(12.4, b)[0]:.2f}" y2="{pt(12.4, b)[1]:.2f}"/>'
+                        for a, b in zip(ang, ang[1:] + ang[:1]))           # ring joining the seam ends
+    return (
+        '<svg width="{s}" height="{s}" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">'
+        '<defs><clipPath id="tod-ball"><circle cx="%.1f" cy="%.1f" r="%.1f"/></clipPath></defs>'
+        '<rect width="64" height="64" rx="15" fill="#DA020E"/>'
+        # faint pitch markings: halfway line + centre circle
+        '<g stroke="rgba(255,255,255,0.22)" stroke-width="1.6" fill="none"><line x1="0" y1="33" x2="64" y2="33"/>'
+        '<circle cx="32" cy="33" r="25"/></g>'
+        '<ellipse cx="32" cy="54.5" rx="12" ry="2.2" fill="rgba(0,0,0,0.25)"/>'   # soft shadow
+        '<circle cx="%.1f" cy="%.1f" r="%.1f" fill="#ffffff"/>'
+        '<g clip-path="url(#tod-ball)" fill="%s"><polygon points="%s"/>%s</g>'
+        '<g clip-path="url(#tod-ball)" stroke="%s" stroke-width="1.5" stroke-linecap="round" fill="none">%s%s</g>'
+        '<circle cx="%.1f" cy="%.1f" r="%.1f" fill="none" stroke="%s" stroke-width="1.2" opacity="0.35"/>'
+        '</svg>'
+    ) % (cx, cy, R, cx, cy, R, ink, centre, outer, ink, seams, rim_seams, cx, cy, R, ink)
+
+LOGO_SVG = _football_logo_svg()
 
 def logo(size=32):
-    return LOGO_SVG.format(s=size)
+    return LOGO_SVG.replace("{s}", str(size))
 
 def section_head(kicker, title, right="", kicker_color=None):
     kc = kicker_color or MUTED
@@ -425,7 +473,7 @@ def kpi(label, icon, icon_color, value, sub, sub_color=MUTED, foot_l="", foot_l_
 
 def footer():
     H(f'''<div class="footer"><div class="row gx m body-sm">{ico("verified", 16, POS)}
-    <span>United Intel Tactical Lab — Manchester United 2026/27 analytics portfolio · Built with Python, Streamlit &amp; Plotly</span></div>
+    <span>Theatre of Data — Manchester United 2026/27 tactical analytics portfolio · Built with Python, Streamlit &amp; Plotly</span></div>
     <span class="lbl">Dataset: MD 1–6 · Opta / FotMob · Illustrative tactical models</span></div>''')
 
 # ------------------------------------------------------------------------------
@@ -1203,16 +1251,16 @@ def scroll_to(selector):
         </script>""", height=0)
 
 with st.sidebar:
-    H(f'''<div class="row gs" style="height:4rem;padding:0 0.25rem;">{logo(32)}
-    <div class="col"><span style="font-family:'Plus Jakarta Sans';font-weight:700;font-size:1.25rem;letter-spacing:-0.01em;color:{TEXT};line-height:1;">UNITED INTEL</span>
-    <span class="lbl" style="letter-spacing:0.18em;margin-top:4px;">Tactical Lab · 2026/27</span></div></div>
+    H(f'''<div class="row gs" style="height:3rem;padding:0 0.25rem;"><span style="flex-shrink:0;display:flex;">{logo(34)}</span>
+    <div class="col" style="min-width:0;"><span style="font-family:'Plus Jakarta Sans';font-weight:800;font-size:1.08rem;letter-spacing:-0.01em;color:{TEXT};line-height:1;white-space:nowrap;">THEATRE OF DATA</span>
+    <span class="lbl" style="letter-spacing:0.12em;margin-top:5px;white-space:nowrap;">MUFC Analytics · 2026/27</span></div></div>
     <div class="row between" style="background:rgba(22,27,38,0.7);padding:0.5rem;border-radius:0.5rem;margin:0.25rem 0 0.75rem;">
     <div class="row gx"><span class="dot pulse" style="width:8px;height:8px;background:{RED};"></span>
     <span class="lbl" style="color:{TEXT};">Report #4 Live</span></div><span class="mono body-sm" style="color:{SEC};">MD 1–6</span></div>''')
     for label, icon in NAV:
         st.button(label, key=f"nav_{icon}", icon=f":material/{icon}:", width="stretch",
                   type="primary" if st.session_state["nav"] == label else "tertiary", on_click=goto, args=(label,))
-    H(f'''<div style="margin-top:2rem;background:rgba(11,14,20,0.5);padding:0.75rem;border-radius:0.5rem;">
+    H(f'''<div class="side-feed" style="background:rgba(11,14,20,0.5);padding:0.75rem;border-radius:0.5rem;">
     <div class="col gx" style="background:rgba(22,27,38,0.4);padding:0.5rem;border-radius:0.5rem;">
     <div class="row between"><span class="lbl">Data Feed Engine</span><span class="lbl" style="color:{POS};">Synchronized</span></div>
     <div class="row gx m">{ico("database", 14)}<span class="body-sm">Opta / FotMob · 6 fixtures</span></div></div></div>''')
@@ -1232,30 +1280,41 @@ st.session_state.setdefault("_scope", "All Matches")
 st.session_state.setdefault("_comps", ALL_COMPS)
 st.session_state.setdefault("_opps", ALL_OPPS)
 
+def apply_filters(scope, comps, opps):
+    out = df_matches[df_matches["Competition"].isin(comps) & df_matches["Opponent_Category"].isin(opps)]
+    if scope == "Home":
+        out = out[out.Venue == "Home"]
+    elif scope == "Away":
+        out = out[out.Venue == "Away"]
+    elif scope == "Top-6":
+        out = out[out.Opponent_Category == "Elite / Top-6"]
+    return out
+
 if show_filters:
+    # Widget keys already hold this run's values (the _-prefixed mirrors are updated below), so the live
+    # fixture count can be computed *before* the bar is drawn and the label renders at its natural height.
+    cur_s = st.session_state.get("scope", st.session_state["_scope"]) or "All Matches"
+    cur_c = st.session_state.get("comps", st.session_state["_comps"])
+    cur_o = st.session_state.get("opps", st.session_state["_opps"])
+    n_view = len(apply_filters(cur_s, cur_c, cur_o))
+    n_active = (len(cur_c) < len(ALL_COMPS)) + (len(cur_o) < len(ALL_OPPS))
     with st.container(key="topbar"):
-        t1, t2, t3, t4 = st.columns([2.2, 2.6, 0.9, 1.5], vertical_alignment="center")
+        t1, t2, t3 = st.columns([3, 3.2, 1.3], vertical_alignment="center")
         with t1:
-            H(f'''<div class="row gs">{logo(30)}<div class="row gx" style="background:{ELEV};padding:0.3rem 0.6rem;border-radius:0.5rem;">
-            {ico("timer", 16, RED)}<span class="body-sm t" style="font-weight:500;">2026/27 Matchday 1–6 Review</span></div></div>''')
+            H(f'''<div class="row gs topbar-ctx">
+            <div class="ibox" style="width:2.25rem;height:2.25rem;border-radius:0.5rem;background:{rgba(RED, 0.14)};color:{RED};">{ico("timer", 19)}</div>
+            <div class="col" style="line-height:1.3;gap:1px;"><span class="lbl" style="font-size:10px;line-height:1.2;">2026/27 Season Review</span>
+            <span class="body-sm t" style="font-weight:600;white-space:nowrap;line-height:1.3;">Matchday 1–6
+            <span class="m" style="font-weight:400;"> · </span><span style="color:{SEC if n_view == len(df_matches) else WARN};">{n_view} of {len(df_matches)} fixtures</span></span></div></div>''')
         with t2:
             scope = st.segmented_control("Scope", SCOPES, default=st.session_state["_scope"], key="scope",
                                          label_visibility="collapsed") or "All Matches"
         with t3:
-            with st.popover("Filters", icon=":material/tune:", width="stretch"):
+            with st.popover(f"Filters · {n_active}" if n_active else "Filters", icon=":material/tune:"):
                 comp_filter = st.multiselect("Competition", options=ALL_COMPS, default=st.session_state["_comps"], key="comps")
                 opp_filter = st.multiselect("Opponent strength", options=ALL_OPPS, default=st.session_state["_opps"], key="opps")
         st.session_state["_scope"], st.session_state["_comps"], st.session_state["_opps"] = scope, comp_filter, opp_filter
-        filtered_df = df_matches[df_matches["Competition"].isin(comp_filter) & df_matches["Opponent_Category"].isin(opp_filter)]
-        if scope == "Home":
-            filtered_df = filtered_df[filtered_df.Venue == "Home"]
-        elif scope == "Away":
-            filtered_df = filtered_df[filtered_df.Venue == "Away"]
-        elif scope == "Top-6":
-            filtered_df = filtered_df[filtered_df.Opponent_Category == "Elite / Top-6"]
-        with t4:
-            st.download_button("Export Dossier CSV", data=filtered_df.drop(columns=["Seq"]).to_csv(index=False).encode("utf-8"),
-                               file_name="mufc_2026-27_dossier.csv", mime="text/csv", icon=":material/download:", width="stretch")
+        filtered_df = apply_filters(scope, comp_filter, opp_filter)
     if filtered_df.empty:
         st.warning("No fixtures match the current scope and filters — widen the top-bar scope or the Filters popover.")
         st.stop()
